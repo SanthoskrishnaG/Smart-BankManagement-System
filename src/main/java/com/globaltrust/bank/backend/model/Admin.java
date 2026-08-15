@@ -1,4 +1,4 @@
-package com.globaltrust.bank.model;
+package com.globaltrust.bank.backend.model;
 
 public class Admin {
     private String username;

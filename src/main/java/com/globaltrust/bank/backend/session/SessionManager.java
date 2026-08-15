@@ -1,7 +1,7 @@
-package com.globaltrust.bank.session;
+package com.globaltrust.bank.backend.session;
 
-import com.globaltrust.bank.model.Admin;
-import com.globaltrust.bank.model.User;
+import com.globaltrust.bank.backend.model.Admin;
+import com.globaltrust.bank.backend.model.User;
 
 public class SessionManager {
     

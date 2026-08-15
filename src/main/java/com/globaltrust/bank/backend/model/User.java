@@ -1,4 +1,4 @@
-package com.globaltrust.bank.model;
+package com.globaltrust.bank.backend.model;
 
 import java.util.ArrayList;
 import java.util.List;

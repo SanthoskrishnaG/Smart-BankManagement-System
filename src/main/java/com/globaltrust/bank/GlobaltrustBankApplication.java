@@ -1,6 +1,6 @@
 package com.globaltrust.bank;
 
-import com.globaltrust.bank.ui.LoginFrame;
+import com.globaltrust.bank.frontend.ui.LoginFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 

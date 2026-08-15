@@ -1,16 +1,15 @@
-package com.globaltrust.bank.service;
+package com.globaltrust.bank.backend.service;
 
-import com.globaltrust.bank.model.Account;
-import com.globaltrust.bank.model.Admin;
-import com.globaltrust.bank.model.BankData;
-import com.globaltrust.bank.model.Loan;
-import com.globaltrust.bank.model.Transaction;
-import com.globaltrust.bank.model.User;
+import com.globaltrust.bank.backend.model.Account;
+import com.globaltrust.bank.backend.model.Admin;
+import com.globaltrust.bank.backend.model.BankData;
+import com.globaltrust.bank.backend.model.Loan;
+import com.globaltrust.bank.backend.model.Transaction;
+import com.globaltrust.bank.backend.model.User;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -96,8 +95,8 @@ public class BankDataService {
 
     public synchronized Admin authenticateAdmin(String username, String password) {
         if (bankData.getAdmin() != null &&
-            bankData.getAdmin().getUsername().equals(username) &&
-            bankData.getAdmin().getPassword().equals(password)) {
+                bankData.getAdmin().getUsername().equals(username) &&
+                bankData.getAdmin().getPassword().equals(password)) {
             return bankData.getAdmin();
         }
         return null;
@@ -108,8 +107,10 @@ public class BankDataService {
             return null;
         }
         user.setId("U" + UUID.randomUUID().toString().substring(0, 5).toUpperCase());
-        if (user.getAccounts() == null) user.setAccounts(new ArrayList<>());
-        if (user.getLoans() == null) user.setLoans(new ArrayList<>());
+        if (user.getAccounts() == null)
+            user.setAccounts(new ArrayList<>());
+        if (user.getLoans() == null)
+            user.setLoans(new ArrayList<>());
 
         bankData.getUsers().add(user);
         saveData();
@@ -122,7 +123,8 @@ public class BankDataService {
 
     public synchronized Account createAccount(String userId, String type) {
         User user = getUserById(userId);
-        if (user == null) return null;
+        if (user == null)
+            return null;
 
         String accNumber = "ACC" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         Account newAccount = new Account(accNumber, type, 0.0, new ArrayList<>());
@@ -133,7 +135,8 @@ public class BankDataService {
 
     public synchronized Transaction deposit(String userId, String accountNumber, double amount) {
         User user = getUserById(userId);
-        if (user == null || amount <= 0) return null;
+        if (user == null || amount <= 0)
+            return null;
 
         Optional<Account> accountOpt = user.getAccounts().stream()
                 .filter(a -> a.getAccountNumber().equals(accountNumber))
@@ -144,9 +147,8 @@ public class BankDataService {
             account.setBalance(account.getBalance() + amount);
 
             Transaction tx = new Transaction(
-                "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
-                "Deposit", amount, LocalDate.now().toString(), "Deposit"
-            );
+                    "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
+                    "Deposit", amount, LocalDate.now().toString(), "Deposit");
             account.getTransactions().add(tx);
             saveData();
             return tx;
@@ -156,7 +158,8 @@ public class BankDataService {
 
     public synchronized Transaction withdraw(String userId, String accountNumber, double amount) {
         User user = getUserById(userId);
-        if (user == null || amount <= 0) return null;
+        if (user == null || amount <= 0)
+            return null;
 
         Optional<Account> accountOpt = user.getAccounts().stream()
                 .filter(a -> a.getAccountNumber().equals(accountNumber))
@@ -168,9 +171,8 @@ public class BankDataService {
                 account.setBalance(account.getBalance() - amount);
 
                 Transaction tx = new Transaction(
-                    "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
-                    "Withdrawal", amount, LocalDate.now().toString(), "Withdrawal"
-                );
+                        "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
+                        "Withdrawal", amount, LocalDate.now().toString(), "Withdrawal");
                 account.getTransactions().add(tx);
                 saveData();
                 return tx;
@@ -181,12 +183,12 @@ public class BankDataService {
 
     public synchronized Loan applyLoan(String userId, double amount, String duration, String reason) {
         User user = getUserById(userId);
-        if (user == null || amount <= 0) return null;
+        if (user == null || amount <= 0)
+            return null;
 
         Loan loan = new Loan(
-            "L" + UUID.randomUUID().toString().substring(0, 5).toUpperCase(),
-            amount, duration, reason, "Pending"
-        );
+                "L" + UUID.randomUUID().toString().substring(0, 5).toUpperCase(),
+                amount, duration, reason, "Pending");
         user.getLoans().add(loan);
         saveData();
         return loan;
@@ -214,9 +216,9 @@ public class BankDataService {
                         Account acc = user.getAccounts().get(0);
                         acc.setBalance(acc.getBalance() + loan.getAmount());
                         acc.getTransactions().add(new Transaction(
-                             "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
-                             "Loan Disbursement", loan.getAmount(), LocalDate.now().toString(), "Loan Approved: " + loanId
-                        ));
+                                "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
+                                "Loan Disbursement", loan.getAmount(), LocalDate.now().toString(),
+                                "Loan Approved: " + loanId));
                     }
                     saveData();
                     return true;

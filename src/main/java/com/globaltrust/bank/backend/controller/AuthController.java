@@ -1,9 +1,9 @@
-package com.globaltrust.bank.controller;
+package com.globaltrust.bank.backend.controller;
 
-import com.globaltrust.bank.model.Admin;
-import com.globaltrust.bank.model.User;
-import com.globaltrust.bank.service.BankDataService;
-import com.globaltrust.bank.session.SessionManager;
+import com.globaltrust.bank.backend.model.Admin;
+import com.globaltrust.bank.backend.model.User;
+import com.globaltrust.bank.backend.service.BankDataService;
+import com.globaltrust.bank.backend.session.SessionManager;
 
 public class AuthController {
 
