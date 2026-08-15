@@ -1,13 +1,21 @@
 package com.globaltrust.bank;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.globaltrust.bank.ui.LoginFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
-@SpringBootApplication
 public class GlobaltrustBankApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GlobaltrustBankApplication.class, args);
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		SwingUtilities.invokeLater(() -> {
+			new LoginFrame().setVisible(true);
+		});
 	}
 
 }

@@ -8,9 +8,6 @@ import com.globaltrust.bank.model.Transaction;
 import com.globaltrust.bank.model.User;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jakarta.annotation.PostConstruct;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,15 +24,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
 public class BankDataService {
 
     private static final String DATA_FILE = "data.json";
     private Gson gson;
     private BankData bankData;
 
-    @PostConstruct
-    public void init() {
+    private static BankDataService instance;
+
+    public static synchronized BankDataService getInstance() {
+        if (instance == null) {
+            instance = new BankDataService();
+        }
+        return instance;
+    }
+
+    private BankDataService() {
         gson = new GsonBuilder().setPrettyPrinting().create();
         loadData();
     }
@@ -44,12 +48,20 @@ public class BankDataService {
         try {
             File file = new File(DATA_FILE);
             if (!file.exists()) {
-                try (InputStream is = new ClassPathResource(DATA_FILE).getInputStream();
-                     FileOutputStream os = new FileOutputStream(file)) {
-                    byte[] buffer = new byte[1024];
-                    int length;
-                    while ((length = is.read(buffer)) > 0) {
-                        os.write(buffer, 0, length);
+                try (InputStream is = getClass().getClassLoader().getResourceAsStream(DATA_FILE)) {
+                    if (is != null) {
+                        try (FileOutputStream os = new FileOutputStream(file)) {
+                            byte[] buffer = new byte[1024];
+                            int length;
+                            while ((length = is.read(buffer)) > 0) {
+                                os.write(buffer, 0, length);
+                            }
+                        }
+                    } else {
+                        // If file is not found in resources, just create an empty one or default
+                        bankData = new BankData(new Admin("admin", "admin123"), new ArrayList<>());
+                        saveData();
+                        return;
                     }
                 }
             }
