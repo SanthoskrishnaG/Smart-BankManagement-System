@@ -1,6 +1,10 @@
 package com.globaltrust.bank.filter;
 
-import jakarta.servlet.*;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -22,22 +26,21 @@ public class AuthFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
+
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
         String path = req.getRequestURI();
 
-        // Allow public paths and root
         if (path.equals("/") || PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Check APIs
         if (path.startsWith("/api/user/")) {
             HttpSession session = req.getSession(false);
             if (session == null || session.getAttribute("userId") == null) {
                 res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                res.setContentType("application/json");
                 res.getWriter().write("{\"error\": \"Unauthorized - User session required\"}");
                 return;
             }
@@ -47,12 +50,12 @@ public class AuthFilter implements Filter {
             HttpSession session = req.getSession(false);
             if (session == null || session.getAttribute("adminId") == null) {
                 res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                res.setContentType("application/json");
                 res.getWriter().write("{\"error\": \"Unauthorized - Admin session required\"}");
                 return;
             }
         }
 
-        // For HTML pages (basic client-side redirects will also handle this, but server side is safer)
         if (path.endsWith(".html") && !path.equals("/index.html")) {
             HttpSession session = req.getSession(false);
             if (session == null || (session.getAttribute("userId") == null && session.getAttribute("adminId") == null)) {

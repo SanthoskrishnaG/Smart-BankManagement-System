@@ -3,13 +3,16 @@ package com.globaltrust.bank.controller;
 import com.globaltrust.bank.model.Account;
 import com.globaltrust.bank.model.Loan;
 import com.globaltrust.bank.model.Transaction;
-import com.globaltrust.bank.model.User;
 import com.globaltrust.bank.service.BankDataService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -31,7 +34,7 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(HttpServletRequest request) {
         String userId = getUserId(request);
-        User user = bankDataService.getUserById(userId);
+        com.globaltrust.bank.model.User user = bankDataService.getUserById(userId);
         if (user != null) {
             return ResponseEntity.ok(user);
         }
@@ -54,7 +57,7 @@ public class UserController {
         String userId = getUserId(request);
         String accountNumber = (String) body.get("accountNumber");
         double amount = Double.parseDouble(body.get("amount").toString());
-        
+
         Transaction tx = bankDataService.deposit(userId, accountNumber, amount);
         if (tx != null) {
             return ResponseEntity.ok(tx);
@@ -67,7 +70,7 @@ public class UserController {
         String userId = getUserId(request);
         String accountNumber = (String) body.get("accountNumber");
         double amount = Double.parseDouble(body.get("amount").toString());
-        
+
         Transaction tx = bankDataService.withdraw(userId, accountNumber, amount);
         if (tx != null) {
             return ResponseEntity.ok(tx);
@@ -81,7 +84,7 @@ public class UserController {
         double amount = Double.parseDouble(body.get("amount").toString());
         String duration = (String) body.get("duration");
         String reason = (String) body.get("reason");
-        
+
         Loan loan = bankDataService.applyLoan(userId, amount, duration, reason);
         if (loan != null) {
             return ResponseEntity.ok(loan);

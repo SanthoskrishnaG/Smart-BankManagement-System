@@ -1,19 +1,31 @@
 package com.globaltrust.bank.service;
 
-import com.globaltrust.bank.model.*;
+import com.globaltrust.bank.model.Account;
+import com.globaltrust.bank.model.Admin;
+import com.globaltrust.bank.model.BankData;
+import com.globaltrust.bank.model.Loan;
+import com.globaltrust.bank.model.Transaction;
+import com.globaltrust.bank.model.User;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class BankDataService {
@@ -32,7 +44,6 @@ public class BankDataService {
         try {
             File file = new File(DATA_FILE);
             if (!file.exists()) {
-                // Copy from resources to root if it doesn't exist so we can write to it
                 try (InputStream is = new ClassPathResource(DATA_FILE).getInputStream();
                      FileOutputStream os = new FileOutputStream(file)) {
                     byte[] buffer = new byte[1024];
@@ -52,7 +63,6 @@ public class BankDataService {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback
             bankData = new BankData(new Admin("admin", "admin123"), new ArrayList<>());
         }
     }
@@ -65,7 +75,6 @@ public class BankDataService {
         }
     }
 
-    // --- Auth ---
     public synchronized User authenticateUser(String username, String password) {
         return bankData.getUsers().stream()
                 .filter(u -> u.getUsername().equals(username) && u.getPassword().equals(password))
@@ -74,8 +83,8 @@ public class BankDataService {
     }
 
     public synchronized Admin authenticateAdmin(String username, String password) {
-        if (bankData.getAdmin() != null && 
-            bankData.getAdmin().getUsername().equals(username) && 
+        if (bankData.getAdmin() != null &&
+            bankData.getAdmin().getUsername().equals(username) &&
             bankData.getAdmin().getPassword().equals(password)) {
             return bankData.getAdmin();
         }
@@ -84,18 +93,17 @@ public class BankDataService {
 
     public synchronized User registerUser(User user) {
         if (bankData.getUsers().stream().anyMatch(u -> u.getUsername().equals(user.getUsername()))) {
-            return null; // Username exists
+            return null;
         }
         user.setId("U" + UUID.randomUUID().toString().substring(0, 5).toUpperCase());
         if (user.getAccounts() == null) user.setAccounts(new ArrayList<>());
         if (user.getLoans() == null) user.setLoans(new ArrayList<>());
-        
+
         bankData.getUsers().add(user);
         saveData();
         return user;
     }
 
-    // --- User Operations ---
     public synchronized User getUserById(String id) {
         return bankData.getUsers().stream().filter(u -> u.getId().equals(id)).findFirst().orElse(null);
     }
@@ -122,7 +130,7 @@ public class BankDataService {
         if (accountOpt.isPresent()) {
             Account account = accountOpt.get();
             account.setBalance(account.getBalance() + amount);
-            
+
             Transaction tx = new Transaction(
                 "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
                 "Deposit", amount, LocalDate.now().toString(), "Deposit"
@@ -146,7 +154,7 @@ public class BankDataService {
             Account account = accountOpt.get();
             if (account.getBalance() >= amount) {
                 account.setBalance(account.getBalance() - amount);
-                
+
                 Transaction tx = new Transaction(
                     "TXN" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
                     "Withdrawal", amount, LocalDate.now().toString(), "Withdrawal"
@@ -172,7 +180,6 @@ public class BankDataService {
         return loan;
     }
 
-    // --- Admin Operations ---
     public synchronized List<User> getAllUsers() {
         return new ArrayList<>(bankData.getUsers());
     }
@@ -190,8 +197,7 @@ public class BankDataService {
             for (Loan loan : user.getLoans()) {
                 if (loan.getLoanId().equals(loanId)) {
                     loan.setStatus(status);
-                    
-                    // If approved, we should ideally deposit to an account. Let's just update status for now.
+
                     if ("Approved".equals(status) && !user.getAccounts().isEmpty()) {
                         Account acc = user.getAccounts().get(0);
                         acc.setBalance(acc.getBalance() + loan.getAmount());
